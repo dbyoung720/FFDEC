@@ -22,7 +22,6 @@ type
     FintFrameCount: Integer;
     FintRate      : Integer;
     Filine        : Integer;
-    Fisize        : Integer;
     procedure FrameToBitmap(const frame: PAVFrame);
     procedure VideoDecode(DecCT: PAVCodecContext; pkt: TAVPacket; pGPUVideoframe: PAVFrame);
     procedure UpdateUI;
@@ -111,7 +110,6 @@ begin
   FBmp32.Width       := Fpcct^.Width;
   FBmp32.Height      := Fpcct^.Height;
   Filine             := TBitmapImageAccess(TBMPAccess(FBmp32).FImage).FDIB.dsBm.bmWidthBytes;
-  Fisize             := TBitmapImageAccess(TBMPAccess(FBmp32).FImage).FDIB.dsBmih.biSizeImage;
   FpBits             := TBitmapImageAccess(TBMPAccess(FBmp32).FImage).FDIB.dsBm.bmBits;
 
   { 7.1 解码准备 --- 初始化临时帧临时变量 }
