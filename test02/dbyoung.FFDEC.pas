@@ -20,6 +20,9 @@ type
     FintRate      : Integer;
     Fpriv         : PDXVA2DevicePriv;
     FDXFont       : ID3DXFont;
+    Fsurface      : IDIRECT3DSURFACE9;
+    FiSpace       : Integer;
+    FSourceRect   : TRect;
     procedure VideoDecode(DecCT: PAVCodecContext; pkt: TAVPacket; pGPUVideoframe: PAVFrame);
     procedure dxPlay(pGPUVideoframe: PAVFrame; DecCT: PAVCodecContext; const hWnd: THandle);
     procedure CreateFont(d3d: IDirect3DDevice9);
@@ -102,6 +105,10 @@ begin
   { 7.1 解码准备 --- 用于计算帧率 }
   FintST         := GetTickCount;
   FintFrameCount := 0;
+
+  { 7.1 解码准备 --- 文字间隔 }
+  FiSpace     := Round(Fpcct^.Height * 0.043 + 7);
+  FSourceRect := Rect(0, 0, Fpcct^.Width, Fpcct^.Height);
 end;
 
 destructor TVideoDecode.Destroy;
@@ -149,22 +156,19 @@ end;
 { 绘制速率 }
 procedure TVideoDecode.RenderText;
 var
-  iSpace: Integer;
-  rct01 : TRect;
-  rct02 : TRect;
-  rct03 : TRect;
-  rct04 : TRect;
+  rct01: TRect;
+  rct02: TRect;
+  rct03: TRect;
+  rct04: TRect;
 begin
-  iSpace := Round(Fpcct^.Height * 0.043 + 7);
-
-  rct01 := Rect(20, 0 * iSpace + 20, 1800, 120);
-  rct02 := Rect(20, 1 * iSpace + 20, 1800, 220);
-  rct03 := Rect(20, 2 * iSpace + 20, 1800, 320);
-  rct04 := Rect(20, 3 * iSpace + 20, 1800, 420);
-  FDXFont.DrawTextW(nil, PChar('作者(Auth)：dbyoung@sina.com'),                                          -1, @rct01, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
+  rct01 := Rect(20, 0 * FiSpace + 20, 1800, 120);
+  rct02 := Rect(20, 1 * FiSpace + 20, 1800, 220);
+  rct03 := Rect(20, 2 * FiSpace + 20, 1800, 320);
+  rct04 := Rect(20, 3 * FiSpace + 20, 1800, 420);
+  FDXFont.DrawTextW(nil, PChar('作者(Auth)：dbyoung@sina.com'), -1, @rct01, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
   FDXFont.DrawTextW(nil, PChar('大小(Size)：' + InttoStr(Fpcct^.Width) + 'X' + InttoStr(Fpcct^.Height)), -1, @rct02, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 255, 0));
-  FDXFont.DrawTextW(nil, PChar('用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒'),      -1, @rct03, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 0, 255));
-  FDXFont.DrawTextW(nil, PChar('速率(Rate)：' + InttoStr(FintRate) + '帧/秒'),                           -1, @rct04, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
+  FDXFont.DrawTextW(nil, PChar('用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒'), -1, @rct03, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 0, 255));
+  FDXFont.DrawTextW(nil, PChar('速率(Rate)：' + InttoStr(FintRate) + '帧/秒'), -1, @rct04, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
 end;
 
 var
@@ -181,12 +185,11 @@ procedure TVideoDecode.dxPlay(pGPUVideoframe: PAVFrame; DecCT: PAVCodecContext; 
 var
   device_ctx: PAVHWDeviceContext;
   BackBuffer: IDIRECT3DSURFACE9;
-  surface   : IDIRECT3DSURFACE9;
-  SourceRect: TRect;
 begin
   { 重置 D3D 设备，将渲染表面指向我们的窗体 }
   if not FbD3DReset then
   begin
+    Fsurface    := IDIRECT3DSURFACE9(pGPUVideoframe^.data[3]);     // 待绘制的数据
     device_ctx  := PAVHWDeviceContext(DecCT^.hw_device_ctx^.data); // 设备上下文信息
     Fpriv       := PDXVA2DevicePriv(device_ctx^.user_opaque);      // DX 设备信息
     FSelfObject := Self;                                           // 保存下当前对象
@@ -199,11 +202,9 @@ begin
     { 开始渲染 }
     Fpriv^.d3d9device.BeginScene;
     BackBuffer := nil;
-    surface    := IDIRECT3DSURFACE9(pGPUVideoframe^.data[3]); // 待绘制的数据
     Fpriv^.d3d9device.Clear(0, nil, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0, 0);
     Fpriv^.d3d9device.GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, BackBuffer);
-    SourceRect := Rect(0, 0, DecCT^.Width, DecCT^.Height);
-    Fpriv^.d3d9device.StretchRect(surface, @SourceRect, BackBuffer, nil, D3DTEXF_LINEAR);
+    Fpriv^.d3d9device.StretchRect(Fsurface, @FSourceRect, BackBuffer, nil, D3DTEXF_LINEAR);
     RenderText;
     Fpriv^.d3d9device.EndScene;
     Fpriv^.d3d9device.Present(nil, nil, 0, nil);
