@@ -165,10 +165,10 @@ begin
   rct02 := Rect(20, 1 * FiSpace + 20, 1800, 220);
   rct03 := Rect(20, 2 * FiSpace + 20, 1800, 320);
   rct04 := Rect(20, 3 * FiSpace + 20, 1800, 420);
-  FDXFont.DrawTextW(nil, PChar('作者(Auth)：dbyoung@sina.com'), -1, @rct01, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
+  FDXFont.DrawTextW(nil, PChar('作者(Auth)：dbyoung@sina.com'),                                          -1, @rct01, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
   FDXFont.DrawTextW(nil, PChar('大小(Size)：' + InttoStr(Fpcct^.Width) + 'X' + InttoStr(Fpcct^.Height)), -1, @rct02, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 255, 0));
-  FDXFont.DrawTextW(nil, PChar('用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒'), -1, @rct03, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 0, 255));
-  FDXFont.DrawTextW(nil, PChar('速率(Rate)：' + InttoStr(FintRate) + '帧/秒'), -1, @rct04, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
+  FDXFont.DrawTextW(nil, PChar('用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒'),      -1, @rct03, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 0, 255));
+  FDXFont.DrawTextW(nil, PChar('速率(Rate)：' + InttoStr(FintRate) + '帧/秒'),                           -1, @rct04, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 255, 0));
 end;
 
 var
