@@ -266,7 +266,6 @@ begin
   Result                       := SUCCEEDED(d3d.Reset(d3dpp));
 end;
 
-
 procedure VertiLineSSE2(Line1, Line2: PByte; Count: Integer);
 {$IFDEF WIN32}
 asm
