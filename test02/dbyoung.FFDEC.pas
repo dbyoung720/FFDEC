@@ -35,10 +35,6 @@ implementation
 
 { TVideoDecode }
 
-type
-  TBMPAccess         = class(TBitmap);
-  TBitmapImageAccess = class(TBitmapImage);
-
 constructor TVideoDecode.Create(const strFFMPEGDLLPath, strVideoFileName: string; const hDrawUI: THandle);
 var
   decoder: PAVCodec;
