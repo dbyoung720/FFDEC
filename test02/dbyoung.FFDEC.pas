@@ -2,7 +2,7 @@ unit dbyoung.FFDEC;
 
 interface
 
-uses Winapi.Windows, Winapi.Direct3D9, Winapi.DXTypes, System.Classes, System.SysUtils, System.Math, System.Threading, Vcl.Graphics, Vcl.Forms, dbyoung.FFMPEG, Winapi.D3DX9;
+uses Winapi.Windows, Winapi.Direct3D9, Winapi.D3DX9, Winapi.DXTypes, System.Classes, System.SysUtils, System.Math, System.Threading, Vcl.Graphics, Vcl.Forms, dbyoung.FFMPEG;
 
 { TVideoDecode }
 type
@@ -185,8 +185,8 @@ procedure TVideoDecode.dxPlay(pGPUVideoframe: PAVFrame; DecCT: PAVCodecContext; 
 var
   device_ctx: PAVHWDeviceContext;
   BackBuffer: IDIRECT3DSURFACE9;
-  SourceRect: TRect;
   surface   : IDIRECT3DSURFACE9;
+  SourceRect: TRect;
 begin
   { 重置 D3D 设备，将渲染表面指向我们的窗体 }
   if not FbD3DReset then
