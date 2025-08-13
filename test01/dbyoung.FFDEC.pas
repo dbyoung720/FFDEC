@@ -22,6 +22,8 @@ type
     FintFrameCount: Integer;
     FintRate      : Integer;
     Filine        : Integer;
+    FiSpace       : Integer;
+    FiFontSize    : Integer;
     procedure FrameToBitmap(const frame: PAVFrame);
     procedure VideoDecode(DecCT: PAVCodecContext; pkt: TAVPacket; pGPUVideoframe: PAVFrame);
     procedure UpdateUI;
@@ -119,6 +121,10 @@ begin
   { 7.1 解码准备 --- 用于计算帧率 }
   FintST         := GetTickCount;
   FintFrameCount := 0;
+
+  { 7.1 解码准备 --- 界面绘制，文字大小、间隔 }
+  FiFontSize := GetTextFontSize(Fpcct^.Height);
+  FiSpace    := GetTextSpace(Fpcct^.Height);
 end;
 
 destructor TVideoDecode.Destroy;
@@ -212,16 +218,16 @@ procedure TVideoDecode.UpdateUI;
 begin
   { 绘制解码速率 }
   FBmp32.Canvas.Brush.Style := bsClear;
-  FBmp32.Canvas.Font.Size   := 26;
+  FBmp32.Canvas.Font.Size   := FiFontSize;
   FBmp32.Canvas.Font.Name   := '宋体';
   FBmp32.Canvas.Font.Color  := clRed;
-  FBmp32.Canvas.TextOut(20, 020, '作者(Auth)：dbyoung@sina.com');
+  FBmp32.Canvas.TextOut(20, 20 + FiSpace * 0, '作者(Auth)：dbyoung@sina.com');
   FBmp32.Canvas.Font.Color := clGreen;
-  FBmp32.Canvas.TextOut(20, 060, '大小(Size)：' + InttoStr(Fpcct^.Width) + 'X' + InttoStr(Fpcct^.Height));
+  FBmp32.Canvas.TextOut(20, 20 + FiSpace * 1, '大小(Size)：' + InttoStr(Fpcct^.Width) + 'X' + InttoStr(Fpcct^.Height));
   FBmp32.Canvas.Font.Color := clBlue;
-  FBmp32.Canvas.TextOut(20, 100, '用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒');
+  FBmp32.Canvas.TextOut(20, 20 + FiSpace * 2, '用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒');
   FBmp32.Canvas.Font.Color := clYellow;
-  FBmp32.Canvas.TextOut(20, 140, '速率(Rate)：' + InttoStr(FintRate) + '帧/秒');
+  FBmp32.Canvas.TextOut(20, 20 + FiSpace * 3, '速率(Rate)：' + InttoStr(FintRate) + '帧/秒');
 
   { 绘制到界面 }
   FDrawUICanvas.StretchDraw(FDrawUICanvas.ClipRect, FBmp32);

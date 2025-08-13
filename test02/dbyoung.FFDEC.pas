@@ -107,7 +107,7 @@ begin
   FintFrameCount := 0;
 
   { 7.1 解码准备 --- 文字间隔 }
-  FiSpace     := Round(Fpcct^.Height * 0.043 + 7);
+  FiSpace     := GetTextSpace(Fpcct^.Height);
   FSourceRect := Rect(0, 0, Fpcct^.Width, Fpcct^.Height);
 end;
 
@@ -145,7 +145,7 @@ var
   FontDesc: TD3DXFontDesc;
 begin
   ZeroMemory(@FontDesc, SizeOf(FontDesc));
-  FontDesc.Height := Round(Fpcct^.Height * 0.042 + 8);
+  FontDesc.Height := GetTextFontSize(Fpcct^.Height);
   FontDesc.Width  := 0;
   FontDesc.Weight := FW_NORMAL;
   FontDesc.Italic := False;
@@ -161,10 +161,10 @@ var
   rct03: TRect;
   rct04: TRect;
 begin
-  rct01 := Rect(20, 0 * FiSpace + 20, 1800, 120);
-  rct02 := Rect(20, 1 * FiSpace + 20, 1800, 220);
-  rct03 := Rect(20, 2 * FiSpace + 20, 1800, 320);
-  rct04 := Rect(20, 3 * FiSpace + 20, 1800, 420);
+  rct01 := Rect(20, 0 * FiSpace + 20, 1800, 1 * FiSpace + 20);
+  rct02 := Rect(20, 1 * FiSpace + 20, 1800, 2 * FiSpace + 20);
+  rct03 := Rect(20, 2 * FiSpace + 20, 1800, 3 * FiSpace + 20);
+  rct04 := Rect(20, 3 * FiSpace + 20, 1800, 4 * FiSpace + 20);
   FDXFont.DrawTextW(nil, PChar('作者(Auth)：dbyoung@sina.com'),                                          -1, @rct01, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
   FDXFont.DrawTextW(nil, PChar('大小(Size)：' + InttoStr(Fpcct^.Width) + 'X' + InttoStr(Fpcct^.Height)), -1, @rct02, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 255, 0));
   FDXFont.DrawTextW(nil, PChar('用时(Time)：' + InttoStr((GetTickCount - FintST) div 1000) + '秒'),      -1, @rct03, DT_LEFT or DT_TOP, D3DCOLOR_XRGB(0, 0, 255));

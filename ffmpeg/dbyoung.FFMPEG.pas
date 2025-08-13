@@ -70,6 +70,10 @@ function AddDllDirectory(strDllPath: PChar): BOOL; stdcall; external kernel32;
 { 图像垂直镜像 }
 procedure VertiMirror(bmp: TBitmap);
 
+{ 绘制文字的大小、间隔 }
+function GetTextFontSize(const iFrameHeight: Integer): Integer;
+function GetTextSpace(const iFrameHeight: Integer): Integer;
+
 {$REGION '◆◆◆ FFMPEG 硬件加速视频解码相关 ◆◆◆'}
 const
   hw_type_names: array [0 .. 13] of PAnsiChar = ('cuda', 'drm', 'dxva2', 'd3d11va', 'd3d12va', 'opencl', 'qsv', 'vaapi', 'vdpau', 'videotoolbox', 'mediacodec', 'vulkan', 'amf', 'ohcodec');
@@ -315,6 +319,16 @@ begin
     Inc(StartScanLineSrc, bmpWidthBytes);
     DEC(StartScanLineDst, bmpWidthBytes);
   end;
+end;
+
+function GetTextFontSize(const iFrameHeight: Integer): Integer;
+begin
+  Result := Round(iFrameHeight * 0.0428 + 8);
+end;
+
+function GetTextSpace(const iFrameHeight: Integer): Integer;
+begin
+  Result := Round(iFrameHeight * 0.0636 + 13);
 end;
 
 end.
