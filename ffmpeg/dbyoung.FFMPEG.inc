@@ -1535,7 +1535,7 @@ type
     execute2: function(c: PAVCodecContext; func: Texecute2Call; arg2: Pointer; ret: PInteger; count: Integer): Integer; cdecl;
     profile: Integer;
     level: Integer;
-    properties:DWORD;
+    properties: DWORD;
     skip_loop_filter: TAVDiscard;
     skip_idct: TAVDiscard;
     skip_frame: TAVDiscard;

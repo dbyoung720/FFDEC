@@ -16,5 +16,6 @@
 *.rsm
 .vs
 __history
+/libyuv
 /bin/Win64/dll/ffmpeg/avcodec-62.dll
 /bin/Win64/dll/ffmpeg/nppif64_12.dll

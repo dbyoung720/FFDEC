@@ -62,6 +62,10 @@ var
   sws_getContext : function(srcW, srcH: Integer; srcFormat: TAVPixelFormat; dstW, dstH: Integer; dstFormat: TAVPixelFormat; flags: Integer; srcFilter, dstFilter: PSwsFilter; param: PDouble): PSwsContext; cdecl;
   sws_scale      : function(c: PSwsContext; const srcSlice: PPByte; const srcStride: PInteger; srcSliceY, srcSliceH: Integer; const dst: PPByte; const dstStride: PInteger): Integer; cdecl;
 
+  { libyuv }
+  libYUV_NV12ToARGB  : function(const src_y: PByte; src_stride_y: NativeInt; const src_uv: PByte; src_stride_uv: NativeInt; dst_argb: PByte; dst_stride_argb, Width, Height: NativeInt): NativeInt; cdecl;
+  libYUV_P010LEToARGB: function(const frame: PAVFrame; dst_argb: PByte; Width, Height: NativeInt; const is_bt2020: Boolean = False; const full_range: Boolean = False): NativeInt; cdecl;
+
 procedure InitFFMPEG;
 procedure FreeFFMPEG;
 
@@ -93,10 +97,10 @@ var
   hw_device_ctx: PAVBufferRef;
   hw_pix_fmt   : TAVPixelFormat;
 
-function FindHWDecoder(const strName: string; var type_: TAVHWDeviceType): Boolean; { 寻找硬件解码器 }
-function GetSupportHWConfig(decoder: PAVCodec; type_: TAVHWDeviceType): Boolean;    { 查询硬件是否支持此格式视频硬解 }
-function InitHWDecoder(var pcct: PAVCodecContext; type_: TAVHWDeviceType): Boolean; { 初始化硬解解码器 }
-function ResetD3D(const iWidth, iHeight: Integer; d3d: IDirect3DDevice9; const hWnd: THandle): Boolean;
+function FindHWDecoder(const strName: string; var type_: TAVHWDeviceType): Boolean;                     { 寻找硬件解码器 }
+function GetSupportHWConfig(decoder: PAVCodec; type_: TAVHWDeviceType): Boolean;                        { 查询硬件是否支持此格式视频硬解 }
+function InitHWDecoder(var pcct: PAVCodecContext; type_: TAVHWDeviceType): Boolean;                     { 初始化硬解解码器 }
+function ResetD3D(const iWidth, iHeight: Integer; d3d: IDIRECT3DDEVICE9; const hWnd: THandle): Boolean; { 重置 D3D 设备 }
 {$ENDREGION}
 
 implementation
@@ -113,6 +117,7 @@ var
   hAvformat: HMODULE;
   hAvutil  : HMODULE;
   hSwscale : HMODULE;
+  hlibYUV  : HMODULE;
 
 procedure InitFFMPEG();
 begin
@@ -165,6 +170,10 @@ begin
   @sws_freeContext := GetProcAddress(hSwscale, 'sws_freeContext');
   @sws_getContext  := GetProcAddress(hSwscale, 'sws_getContext');
   @sws_scale       := GetProcAddress(hSwscale, 'sws_scale');
+
+  hlibYUV              := LoadLibraryEx(PChar('libYUV.dll'), 0, LOAD_LIBRARY_SEARCH_USER_DIRS);
+  @libYUV_NV12ToARGB   := GetProcAddress(hlibYUV, 'NV12ToARGB');
+  @libYUV_P010LEToARGB := GetProcAddress(hlibYUV, 'P010LEToARGB');
 end;
 
 procedure FreeFFMPEG;
@@ -173,6 +182,7 @@ begin
   FreeLibrary(hAvformat);
   FreeLibrary(hAvutil);
   FreeLibrary(hSwscale);
+  FreeLibrary(hlibYUV);
 end;
 
 { 寻找硬件解码器 }
@@ -252,7 +262,8 @@ begin
   Result             := hw_decoder_init(pcct, type_) >= 0;
 end;
 
-function ResetD3D(const iWidth, iHeight: Integer; d3d: IDirect3DDevice9; const hWnd: THandle): Boolean;
+{ 重置 D3D 设备 }
+function ResetD3D(const iWidth, iHeight: Integer; d3d: IDIRECT3DDEVICE9; const hWnd: THandle): Boolean;
 var
   d3dpp: TD3DPresentParameters;
 begin

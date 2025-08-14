@@ -207,11 +207,20 @@ begin
   if Fswsct = nil then
     Fswsct := sws_getContext(Fpcct^.Width, Fpcct^.Height, frame^.format, Fpcct^.Width, Fpcct^.Height, AV_PIX_FMT_RGB32, SWS_BICUBIC, nil, nil, nil);
 
-  { 获取到位图 }
-  sws_scale(Fswsct, @frame^.data, @frame^.linesize, 0, frame^.Height, @FpBits, @Filine);
-
-  { 图像垂直翻转 }
-  VertiMirror(FBmp32);
+  { 获取到位图。sws_scale 函数效率低下, libyuv 效率较高 }
+  if frame^.format = AV_PIX_FMT_NV12 then
+  begin
+    libYUV_NV12ToARGB(frame^.data[0], frame^.linesize[0], frame^.data[1], frame^.linesize[1], FpBits, Filine, frame^.Width, -frame^.Height);
+  end
+  else if frame^.format = AV_PIX_FMT_P010LE then
+  begin
+    libYUV_P010LEToARGB(frame, FpBits, frame^.Width, -frame^.Height, False, False);
+  end
+  else
+  begin
+    sws_scale(Fswsct, @frame^.data, @frame^.linesize, 0, frame^.Height, @FpBits, @Filine); { 获取到位图 }
+    VertiMirror(FBmp32);                                                                   { 图像垂直翻转 }
+  end;
 end;
 
 procedure TVideoDecode.UpdateUI;
