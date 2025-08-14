@@ -214,7 +214,7 @@ begin
   end
   else if frame^.format = AV_PIX_FMT_P010LE then
   begin
-    libYUV_P010LEToARGB(frame, FpBits, frame^.Width, -frame^.Height, False, False);
+    libYUV_P010LEToARGB(frame, FpBits, Filine, frame^.Width, -frame^.Height);
   end
   else
   begin

@@ -64,7 +64,7 @@ type
   PAVCodecInternal               = ^TAVCodecInternal;
   PRcOverride                    = ^TRcOverride;
   PAVHWAccel                     = ^TAVHWAccel;
-  TexecuteCall                   = function(c2: PAVCodecContext; arg: Pointer)                           : Integer; cdecl;
+  TexecuteCall                   = function(c2: PAVCodecContext; arg: Pointer) : Integer; cdecl;
   Texecute2Call                  = function(c2: PAVCodecContext; arg: Pointer; jobnr, threadnr: Integer): Integer; cdecl;
   PAVCodecDescriptor             = ^TAVCodecDescriptor;
   PPAVStream                     = ^PAVStream;
@@ -74,7 +74,7 @@ type
   PPAVChapter                    = ^PAVChapter;
   PAVChapter                     = ^TAVChapter;
   PAVIOInterruptCB               = ^TAVIOInterruptCB;
-  Tav_format_control_messageCall = function(s: PAVFormatContext; ttype: Integer; data: Pointer; data_size: Size_t)                                                 : Integer; cdecl;
+  Tav_format_control_messageCall = function(s: PAVFormatContext; ttype: Integer; data: Pointer; data_size: Size_t) : Integer; cdecl;
   TAVOpenCallback                = function(s: PAVFormatContext; pb: PPAVIOContext; const url: PAnsiChar; flags: Integer; const int_cb: PAVIOInterruptCB; options: PPAVDictionary): Integer; cdecl;
   PPAVCodecTag                   = ^PAVCodecTag;
   PAVCodecTag                    = ^TAVCodecTag;
@@ -1872,6 +1872,15 @@ type
     hwctx: Pointer;
     free: function(ctx: PAVHWDeviceContext): Pointer; cdecl;
     user_opaque: Pointer;
+  end;
+
+type
+  TYuvConstants = record
+    kUVToB: array [0 .. 31] of Byte;
+    kUVToG: array [0 .. 31] of Byte;
+    kUVToR: array [0 .. 31] of Byte;
+    kYToRgb: array [0 .. 15] of SmallInt;
+    kYBiasToRgb: array [0 .. 15] of SmallInt;
   end;
 
 const

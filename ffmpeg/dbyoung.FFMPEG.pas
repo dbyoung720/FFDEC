@@ -63,8 +63,8 @@ var
   sws_scale      : function(c: PSwsContext; const srcSlice: PPByte; const srcStride: PInteger; srcSliceY, srcSliceH: Integer; const dst: PPByte; const dstStride: PInteger): Integer; cdecl;
 
   { libyuv }
-  libYUV_NV12ToARGB  : function(const src_y: PByte; src_stride_y: NativeInt; const src_uv: PByte; src_stride_uv: NativeInt; dst_argb: PByte; dst_stride_argb, Width, Height: NativeInt): NativeInt; cdecl;
-  libYUV_P010LEToARGB: function(const frame: PAVFrame; dst_argb: PByte; Width, Height: NativeInt; const is_bt2020: Boolean = False; const full_range: Boolean = False): NativeInt; cdecl;
+  libYUV_NV12ToARGB: function(const src_y: PByte; src_stride_y: NativeInt; const src_uv: PByte; src_stride_uv: NativeInt; dst_argb: PByte; dst_stride_argb, Width, Height: NativeInt): NativeInt; cdecl;
+  P010ToARGBMatrix : function(const src_y: PWORD; src_stride_y: NativeInt; const src_uv: PWORD; src_stride_uv: NativeInt; dst_argb: PByte; dst_stride_argb: Integer; const YuvConstants: TYuvConstants; Width, Height: NativeInt): NativeInt; cdecl;
 
 procedure InitFFMPEG;
 procedure FreeFFMPEG;
@@ -73,6 +73,8 @@ function AddDllDirectory(strDllPath: PChar): BOOL; stdcall; external kernel32;
 
 { Í¼Ïñ´¹Ö±¾µÏñ }
 procedure VertiMirror(bmp: TBitmap);
+
+function libYUV_P010LEToARGB(const frame: PAVFrame; dst_argb: PByte; iLineLength, iWidth, iHeight: NativeInt): NativeInt;
 
 { »æÖÆÎÄ×ÖµÄ´óÐ¡¡¢¼ä¸ô }
 function GetTextFontSize(const iFrameHeight: Integer): Integer;
@@ -171,9 +173,9 @@ begin
   @sws_getContext  := GetProcAddress(hSwscale, 'sws_getContext');
   @sws_scale       := GetProcAddress(hSwscale, 'sws_scale');
 
-  hlibYUV              := LoadLibraryEx(PChar('libYUV.dll'), 0, LOAD_LIBRARY_SEARCH_USER_DIRS);
-  @libYUV_NV12ToARGB   := GetProcAddress(hlibYUV, 'NV12ToARGB');
-  @libYUV_P010LEToARGB := GetProcAddress(hlibYUV, 'P010LEToARGB');
+  hlibYUV            := LoadLibraryEx(PChar('libYUV.dll'), 0, LOAD_LIBRARY_SEARCH_USER_DIRS);
+  @libYUV_NV12ToARGB := GetProcAddress(hlibYUV, 'NV12ToARGB');
+  @P010ToARGBMatrix  := GetProcAddress(hlibYUV, 'P010ToARGBMatrix');
 end;
 
 procedure FreeFFMPEG;
@@ -309,7 +311,6 @@ asm
   JNZ     @@LOOP
 end;
 {$ENDIF}
-
 { Í¼Ïñ´¹Ö±¾µÏñ }
 procedure VertiMirror(bmp: TBitmap);
 var
@@ -340,6 +341,24 @@ end;
 function GetTextSpace(const iFrameHeight: Integer): Integer;
 begin
   Result := Round(iFrameHeight * 0.0636 + 13);
+end;
+
+function libYUV_P010LEToARGB(const frame: PAVFrame; dst_argb: PByte; iLineLength, iWidth, iHeight: NativeInt): NativeInt;
+const
+  kUVToB: array [0 .. 31] of Byte          = (128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0, 128, 0);
+  kUVToG: array [0 .. 31] of Byte          = (25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52, 25, 52);
+  kUVToR: array [0 .. 31] of Byte          = (0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102, 0, 102);
+  kYToRgb: array [0 .. 15] of SmallInt     = (18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997, 18997);
+  kYBiasToRgb: array [0 .. 15] of SmallInt = (-1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160, -1160);
+var
+  ColorMatrix: TYuvConstants;
+begin
+  Move(kUVToB, ColorMatrix.kUVToB, SizeOf(kUVToB));
+  Move(kUVToG, ColorMatrix.kUVToG, SizeOf(kUVToG));
+  Move(kUVToR, ColorMatrix.kUVToR, SizeOf(kUVToR));
+  Move(kYToRgb, ColorMatrix.kYToRgb, SizeOf(kYToRgb));
+  Move(kYBiasToRgb, ColorMatrix.kYBiasToRgb, SizeOf(kYBiasToRgb));
+  Result := P010ToARGBMatrix(PWORD(frame^.data[0]), frame^.linesize[0] div 2, PWORD(frame^.data[1]), frame^.linesize[1] div 2, dst_argb, iLineLength, ColorMatrix, frame^.Width, -frame^.Height);
 end;
 
 end.
