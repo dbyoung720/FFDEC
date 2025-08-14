@@ -27,7 +27,11 @@ var
   strCurrPath: string;
 begin
   strCurrPath := ExtractFilePath(ParamStr(0));
+  {$IFDEF WIN32}
   TVideoDecode.Create(strCurrPath + 'dll\ffmpeg\', strCurrPath + 'h264.mp4', Handle);
+  {$ELSE}
+  TVideoDecode.Create(strCurrPath + 'dll\ffmpeg\', strCurrPath + 'h265.mp4', Handle);
+  {$ENDIF}
 end;
 
 end.
