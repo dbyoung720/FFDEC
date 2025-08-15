@@ -311,6 +311,7 @@ asm
   JNZ     @@LOOP
 end;
 {$ENDIF}
+
 { Í¼Ïñ´¹Ö±¾µÏñ }
 procedure VertiMirror(bmp: TBitmap);
 var
