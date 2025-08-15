@@ -1,6 +1,6 @@
 FFMPEG HW Acceleration VIDEO DECODE FOR DELPHI12.3 (DXVA2)
 
-FFMPEG build : 2025-07-13
+FFMPEG build : 2025-08-14
 
 test01 : GDI Render
 test02 : DX  Render
